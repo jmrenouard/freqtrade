@@ -238,16 +238,14 @@ class IFreqaiModel(ABC):
         """
 
         self.pair_it += 1
-        train_it = 0
         # Loop enforcing the sliding window training/backtesting paradigm
         # tr_train is the training time range e.g. 1 historical month
         # tr_backtest is the backtesting time range e.g. the week directly
         # following tr_train. Both of these windows slide through the
         # entire backtest
-        for tr_train, tr_backtest in zip(dk.training_timeranges, dk.backtesting_timeranges):
+        for train_it, (tr_train, tr_backtest) in enumerate(zip(dk.training_timeranges, dk.backtesting_timeranges), start=1):
             pair = metadata["pair"]
             (_, _, _) = self.dd.get_pair_dict_info(pair)
-            train_it += 1
             total_trains = len(dk.backtesting_timeranges)
             self.training_timerange = tr_train
             dataframe_train = dk.slice_dataframe(tr_train, dataframe)
@@ -351,7 +349,7 @@ class IFreqaiModel(ABC):
                 self.scanning = True
                 self.start_scanning(strategy)
 
-        elif self.follow_mode:
+        else:
             dk.set_paths(metadata["pair"], trained_timestamp)
             logger.info(
                 "FreqAI instance set to follow_mode, finding existing pair "
@@ -696,12 +694,11 @@ class IFreqaiModel(ABC):
         return
 
     def get_init_model(self, pair: str) -> Any:
-        if pair not in self.dd.model_dictionary or not self.continual_learning:
-            init_model = None
-        else:
-            init_model = self.dd.model_dictionary[pair]
-
-        return init_model
+        return (
+            None
+            if pair not in self.dd.model_dictionary or not self.continual_learning
+            else self.dd.model_dictionary[pair]
+        )
 
     def _set_train_queue(self):
         """

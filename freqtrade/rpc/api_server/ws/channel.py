@@ -27,7 +27,7 @@ class WebSocketChannel:
         serializer_cls: Type[WebSocketSerializer] = HybridJSONWebSocketSerializer
     ):
 
-        self.channel_id = channel_id if channel_id else uuid4().hex[:8]
+        self.channel_id = channel_id or uuid4().hex[:8]
 
         # The WebSocket object
         self._websocket = WebSocketProxy(websocket)
@@ -128,7 +128,7 @@ class WebSocketChannel:
 
 class ChannelManager:
     def __init__(self):
-        self.channels = dict()
+        self.channels = {}
         self._lock = RLock()  # Re-entrant Lock
 
     async def on_connect(self, websocket: WebSocketType):
@@ -158,8 +158,7 @@ class ChannelManager:
         :param websocket: The WebSocket objet attached to the Channel
         """
         with self._lock:
-            channel = self.channels.get(websocket)
-            if channel:
+            if channel := self.channels.get(websocket):
                 if not channel.is_closed():
                     await channel.close()
 
@@ -174,7 +173,7 @@ class ChannelManager:
                 if not channel.is_closed():
                     await channel.close()
 
-            self.channels = dict()
+            self.channels = {}
 
     async def broadcast(self, data):
         """

@@ -20,7 +20,7 @@ STOPLOSS_ORDERTYPE = 'stop'
 ])
 def test_stoploss_order_ftx(default_conf, mocker, order_price, exchangelimitratio, side):
     api_mock = MagicMock()
-    order_id = 'test_prod_buy_{}'.format(randint(0, 10 ** 6))
+    order_id = f'test_prod_buy_{randint(0, 10**6)}'
 
     api_mock.create_order = MagicMock(return_value={
         'id': order_id,

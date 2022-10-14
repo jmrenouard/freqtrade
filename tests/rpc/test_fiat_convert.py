@@ -105,7 +105,7 @@ def test_fiat_init_network_exception(mocker):
     fiat_convert._coinlistings = {}
     fiat_convert._load_cryptomap()
 
-    assert len(fiat_convert._coinlistings) == 0
+    assert not fiat_convert._coinlistings
 
 
 def test_fiat_convert_without_network(mocker):
@@ -134,7 +134,7 @@ def test_fiat_too_many_requests_response(mocker, caplog):
     fiat_convert._coinlistings = {}
     fiat_convert._load_cryptomap()
 
-    assert len(fiat_convert._coinlistings) == 0
+    assert not fiat_convert._coinlistings
     assert fiat_convert._backoff > datetime.datetime.now().timestamp()
     assert log_has(
         'Too many requests for CoinGecko API, backing off and trying again later.',
@@ -171,7 +171,7 @@ def test_fiat_invalid_response(mocker, caplog):
     fiat_convert._coinlistings = []
     fiat_convert._load_cryptomap()
 
-    assert len(fiat_convert._coinlistings) == 0
+    assert not fiat_convert._coinlistings
     assert log_has_re('Could not load FIAT Cryptocurrency map for the following problem: .*',
                       caplog)
 

@@ -135,10 +135,9 @@ def trim_dataframe(df: DataFrame, timerange, df_date_col: str = 'date',
     if startup_candles:
         # Trim candles instead of timeframe in case of given startup_candle count
         df = df.iloc[startup_candles:, :]
-    else:
-        if timerange.starttype == 'date':
-            start = datetime.fromtimestamp(timerange.startts, tz=timezone.utc)
-            df = df.loc[df[df_date_col] >= start, :]
+    elif timerange.starttype == 'date':
+        start = datetime.fromtimestamp(timerange.startts, tz=timezone.utc)
+        df = df.loc[df[df_date_col] >= start, :]
     if timerange.stoptype == 'date':
         stop = datetime.fromtimestamp(timerange.stopts, tz=timezone.utc)
         df = df.loc[df[df_date_col] <= stop, :]
@@ -184,11 +183,19 @@ def order_book_to_dataframe(bids: list, asks: list) -> DataFrame:
     # add cumulative sum column
     asks_frame['a_sum'] = asks_frame['a_size'].cumsum()
 
-    frame = pd.concat([bids_frame['b_sum'], bids_frame['b_size'], bids_frame['bids'],
-                       asks_frame['asks'], asks_frame['a_size'], asks_frame['a_sum']], axis=1,
-                      keys=['b_sum', 'b_size', 'bids', 'asks', 'a_size', 'a_sum'])
     # logger.info('order book %s', frame )
-    return frame
+    return pd.concat(
+        [
+            bids_frame['b_sum'],
+            bids_frame['b_size'],
+            bids_frame['bids'],
+            asks_frame['asks'],
+            asks_frame['a_size'],
+            asks_frame['a_sum'],
+        ],
+        axis=1,
+        keys=['b_sum', 'b_size', 'bids', 'asks', 'a_size', 'a_sum'],
+    )
 
 
 def trades_remove_duplicates(trades: List[List]) -> List[List]:

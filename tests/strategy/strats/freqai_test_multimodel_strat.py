@@ -70,7 +70,7 @@ class freqai_test_multimodel_strat(IStrategy):
             if n == 0:
                 continue
             informative_shift = informative[indicators].shift(n)
-            informative_shift = informative_shift.add_suffix("_shift-" + str(n))
+            informative_shift = informative_shift.add_suffix(f"_shift-{str(n)}")
             informative = pd.concat((informative, informative_shift), axis=1)
 
         df = merge_informative_pair(df, informative, self.config["timeframe"], tf, ffill=True)
@@ -124,16 +124,18 @@ class freqai_test_multimodel_strat(IStrategy):
 
     def populate_entry_trend(self, df: DataFrame, metadata: dict) -> DataFrame:
 
-        enter_long_conditions = [df["do_predict"] == 1, df["&-s_close"] > df["target_roi"]]
-
-        if enter_long_conditions:
+        if enter_long_conditions := [
+            df["do_predict"] == 1,
+            df["&-s_close"] > df["target_roi"],
+        ]:
             df.loc[
                 reduce(lambda x, y: x & y, enter_long_conditions), ["enter_long", "enter_tag"]
             ] = (1, "long")
 
-        enter_short_conditions = [df["do_predict"] == 1, df["&-s_close"] < df["sell_roi"]]
-
-        if enter_short_conditions:
+        if enter_short_conditions := [
+            df["do_predict"] == 1,
+            df["&-s_close"] < df["sell_roi"],
+        ]:
             df.loc[
                 reduce(lambda x, y: x & y, enter_short_conditions), ["enter_short", "enter_tag"]
             ] = (1, "short")
@@ -141,12 +143,16 @@ class freqai_test_multimodel_strat(IStrategy):
         return df
 
     def populate_exit_trend(self, df: DataFrame, metadata: dict) -> DataFrame:
-        exit_long_conditions = [df["do_predict"] == 1, df["&-s_close"] < df["sell_roi"] * 0.25]
-        if exit_long_conditions:
+        if exit_long_conditions := [
+            df["do_predict"] == 1,
+            df["&-s_close"] < df["sell_roi"] * 0.25,
+        ]:
             df.loc[reduce(lambda x, y: x & y, exit_long_conditions), "exit_long"] = 1
 
-        exit_short_conditions = [df["do_predict"] == 1, df["&-s_close"] > df["target_roi"] * 0.25]
-        if exit_short_conditions:
+        if exit_short_conditions := [
+            df["do_predict"] == 1,
+            df["&-s_close"] > df["target_roi"] * 0.25,
+        ]:
             df.loc[reduce(lambda x, y: x & y, exit_short_conditions), "exit_short"] = 1
 
         return df
