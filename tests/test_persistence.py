@@ -2304,11 +2304,11 @@ def test_update_order_from_ccxt(caplog):
 
     # Order is unfilled, "filled" not set
     # https://github.com/freqtrade/freqtrade/issues/5404
-    ccxt_order.update({'filled': None, 'remaining': 20.0, 'status': 'canceled'})
+    ccxt_order |= {'filled': None, 'remaining': 20.0, 'status': 'canceled'}
     o.update_from_ccxt_object(ccxt_order)
 
     # Order has been closed
-    ccxt_order.update({'filled': 20.0, 'remaining': 0.0, 'status': 'closed'})
+    ccxt_order |= {'filled': 20.0, 'remaining': 0.0, 'status': 'closed'}
     o.update_from_ccxt_object(ccxt_order)
 
     assert o.filled == 20.0
@@ -2316,7 +2316,7 @@ def test_update_order_from_ccxt(caplog):
     assert not o.ft_is_open
     assert o.order_filled_date is not None
 
-    ccxt_order.update({'id': 'somethingelse'})
+    ccxt_order['id'] = 'somethingelse'
     with pytest.raises(DependencyException, match=r"Order-id's don't match"):
         o.update_from_ccxt_object(ccxt_order)
 

@@ -49,12 +49,11 @@ class freqai_test_classifier(IStrategy):
         corr_pairs = self.config["freqai"]["feature_parameters"]["include_corr_pairlist"]
         informative_pairs = []
         for tf in self.config["freqai"]["feature_parameters"]["include_timeframes"]:
-            for pair in whitelist_pairs:
-                informative_pairs.append((pair, tf))
-            for pair in corr_pairs:
-                if pair in whitelist_pairs:
-                    continue  # avoid duplication
-                informative_pairs.append((pair, tf))
+            informative_pairs.extend((pair, tf) for pair in whitelist_pairs)
+            informative_pairs.extend(
+                (pair, tf) for pair in corr_pairs if pair not in whitelist_pairs
+            )
+
         return informative_pairs
 
     def populate_any_indicators(
@@ -84,7 +83,7 @@ class freqai_test_classifier(IStrategy):
             if n == 0:
                 continue
             informative_shift = informative[indicators].shift(n)
-            informative_shift = informative_shift.add_suffix("_shift-" + str(n))
+            informative_shift = informative_shift.add_suffix(f"_shift-{str(n)}")
             informative = pd.concat((informative, informative_shift), axis=1)
 
         df = merge_informative_pair(df, informative, self.config["timeframe"], tf, ffill=True)
@@ -117,16 +116,12 @@ class freqai_test_classifier(IStrategy):
 
     def populate_entry_trend(self, df: DataFrame, metadata: dict) -> DataFrame:
 
-        enter_long_conditions = [df['&s-up_or_down'] == 'up']
-
-        if enter_long_conditions:
+        if enter_long_conditions := [df['&s-up_or_down'] == 'up']:
             df.loc[
                 reduce(lambda x, y: x & y, enter_long_conditions), ["enter_long", "enter_tag"]
             ] = (1, "long")
 
-        enter_short_conditions = [df['&s-up_or_down'] == 'down']
-
-        if enter_short_conditions:
+        if enter_short_conditions := [df['&s-up_or_down'] == 'down']:
             df.loc[
                 reduce(lambda x, y: x & y, enter_short_conditions), ["enter_short", "enter_tag"]
             ] = (1, "short")

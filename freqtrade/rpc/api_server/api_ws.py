@@ -25,12 +25,10 @@ async def is_websocket_alive(ws: WebSocket) -> bool:
     """
     Check if a FastAPI Websocket is still open
     """
-    if (
-        ws.application_state == WebSocketState.CONNECTED and
-        ws.client_state == WebSocketState.CONNECTED
-    ):
-        return True
-    return False
+    return (
+        ws.application_state == WebSocketState.CONNECTED
+        and ws.client_state == WebSocketState.CONNECTED
+    )
 
 
 async def _process_consumer_request(
@@ -60,7 +58,9 @@ async def _process_consumer_request(
             return
 
         # If all topics passed are a valid RPCMessageType, set subscriptions on channel
-        if all([any(x.value == topic for x in RPCMessageType) for topic in data]):
+        if all(
+            any(x.value == topic for x in RPCMessageType) for topic in data
+        ):
             channel.set_subscriptions(data)
 
         # We don't send a response for subscriptions
@@ -76,12 +76,7 @@ async def _process_consumer_request(
         await channel.send(response.dict(exclude_none=True))
 
     elif type == RPCRequestType.ANALYZED_DF:
-        limit = None
-
-        if data:
-            # Limit the amount of candles per dataframe to 'limit' or 1500
-            limit = max(data.get('limit', 1500), 1500)
-
+        limit = max(data.get('limit', 1500), 1500) if data else None
         # They requested the full historical analyzed dataframes
         analyzed_df = rpc._ws_request_analyzed_df(limit)
 

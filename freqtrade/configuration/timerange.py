@@ -82,9 +82,7 @@ class TimeRange:
                   (r'^(\d{13})-(\d{13})$', ('date', 'date')),
                   ]
         for rex, stype in syntax:
-            # Apply the regular expression to text
-            match = re.match(rex, text)
-            if match:  # Regex has matched
+            if match := re.match(rex, text):
                 rvals = match.groups()
                 index = 0
                 start: int = 0

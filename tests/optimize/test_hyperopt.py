@@ -62,7 +62,7 @@ def test_setup_hyperopt_configuration_without_arguments(mocker, default_conf, ca
     assert 'exchange' in config
     assert 'pair_whitelist' in config['exchange']
     assert 'datadir' in config
-    assert log_has('Using data directory: {} ...'.format(config['datadir']), caplog)
+    assert log_has(f"Using data directory: {config['datadir']} ...", caplog)
     assert 'timeframe' in config
 
     assert 'position_stacking' not in config
@@ -103,7 +103,7 @@ def test_setup_hyperopt_configuration_with_arguments(mocker, default_conf, caplo
     assert 'datadir' in config
     assert config['runmode'] == RunMode.HYPEROPT
 
-    assert log_has('Using data directory: {} ...'.format(config['datadir']), caplog)
+    assert log_has(f"Using data directory: {config['datadir']} ...", caplog)
     assert 'timeframe' in config
     assert log_has('Parameter -i/--timeframe detected ... Using timeframe: 1m ...',
                    caplog)
@@ -116,14 +116,17 @@ def test_setup_hyperopt_configuration_with_arguments(mocker, default_conf, caplo
     assert log_has('max_open_trades set to unlimited ...', caplog)
 
     assert 'timerange' in config
-    assert log_has('Parameter --timerange detected: {} ...'.format(config['timerange']), caplog)
+    assert log_has(
+        f"Parameter --timerange detected: {config['timerange']} ...", caplog
+    )
+
 
     assert 'epochs' in config
     assert log_has('Parameter --epochs detected ... Will run Hyperopt with for 1000 epochs ...',
                    caplog)
 
     assert 'spaces' in config
-    assert log_has('Parameter -s/--spaces detected: {}'.format(config['spaces']), caplog)
+    assert log_has(f"Parameter -s/--spaces detected: {config['spaces']}", caplog)
     assert 'print_all' in config
     assert log_has('Parameter --print-all detected ...', caplog)
 

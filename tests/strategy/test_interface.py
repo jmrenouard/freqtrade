@@ -214,12 +214,15 @@ def test_ignore_expired_candle(default_conf):
 
     current_time = latest_date + timedelta(seconds=30 + 300)
 
-    assert not strategy.ignore_expired_candle(
-        latest_date=latest_date,
-        current_time=current_time,
-        timeframe_seconds=300,
-        enter=True
-    ) is True
+    assert (
+        strategy.ignore_expired_candle(
+            latest_date=latest_date,
+            current_time=current_time,
+            timeframe_seconds=300,
+            enter=True,
+        )
+        is not True
+    )
 
 
 def test_assert_df_raise(mocker, caplog, ohlcv_history):
@@ -845,7 +848,7 @@ def test_strategy_safe_wrapper_trade_copy(fee):
         assert len(trade.orders) > 0
         assert trade.orders
         trade.orders = []
-        assert len(trade.orders) == 0
+        assert not trade.orders
         return trade
 
     trade = Trade.get_open_trades()[0]
@@ -977,7 +980,7 @@ def test_auto_hyperopt_interface(default_conf):
     strategy.__class__.sell_rsi = IntParameter([0, 10], default=5, space='buy')
 
     with pytest.raises(OperationalException, match=r"Inconclusive parameter.*"):
-        [x for x in detect_parameters(strategy, 'sell')]
+        list(detect_parameters(strategy, 'sell'))
 
 
 def test_auto_hyperopt_interface_loadparams(default_conf, mocker, caplog):

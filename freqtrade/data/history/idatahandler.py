@@ -239,15 +239,14 @@ class IDataHandler(ABC):
         if candle_type != CandleType.SPOT:
             datadir = datadir.joinpath('futures')
             candle = f"-{candle_type}"
-        filename = datadir.joinpath(
-            f'{pair_s}-{timeframe}{candle}.{cls._get_file_extension()}')
-        return filename
+        return datadir.joinpath(
+            f'{pair_s}-{timeframe}{candle}.{cls._get_file_extension()}'
+        )
 
     @classmethod
     def _pair_trades_filename(cls, datadir: Path, pair: str) -> Path:
         pair_s = misc.pair_to_filename(pair)
-        filename = datadir.joinpath(f'{pair_s}-trades.{cls._get_file_extension()}')
-        return filename
+        return datadir.joinpath(f'{pair_s}-trades.{cls._get_file_extension()}')
 
     @staticmethod
     def timeframe_to_file(timeframe: str):
@@ -303,9 +302,9 @@ class IDataHandler(ABC):
             timerange=timerange_startup,
             candle_type=candle_type
         )
-        if self._check_empty_df(pairdf, pair, timeframe, candle_type, warn_no_data):
-            return pairdf
-        else:
+        if not self._check_empty_df(
+            pairdf, pair, timeframe, candle_type, warn_no_data
+        ):
             enddate = pairdf.iloc[-1]['date']
 
             if timerange_startup:
@@ -321,7 +320,7 @@ class IDataHandler(ABC):
                                            drop_incomplete=(drop_incomplete and
                                                             enddate == pairdf.iloc[-1]['date']))
             self._check_empty_df(pairdf, pair, timeframe, candle_type, warn_no_data)
-            return pairdf
+        return pairdf
 
     def _check_empty_df(self, pairdf: DataFrame, pair: str, timeframe: str,
                         candle_type: CandleType, warn_no_data: bool):

@@ -643,7 +643,7 @@ def test_monthly_handle(default_conf_usdt, update, ticker, fee, mocker, time_mac
 
     # The one-digit months should contain a zero, Eg: September 2021 = "2021-09"
     # Since we loaded the last 12 months, any month should appear
-    assert str('-09') in msg_mock.call_args_list[0][0][0]
+    assert '-09' in msg_mock.call_args_list[0][0][0]
 
     # Try invalid data
     msg_mock.reset_mock()
@@ -662,7 +662,10 @@ def test_monthly_handle(default_conf_usdt, update, ticker, fee, mocker, time_mac
     context = MagicMock()
     context.args = ["february"]
     telegram._monthly(update=update, context=context)
-    assert str('Monthly Profit over the last 6 months</b>:') in msg_mock.call_args_list[0][0][0]
+    assert (
+        'Monthly Profit over the last 6 months</b>:'
+        in msg_mock.call_args_list[0][0][0]
+    )
 
 
 def test_profit_handle(default_conf_usdt, update, ticker_usdt, ticker_sell_up, fee,
@@ -1407,11 +1410,8 @@ def test_count_handle(default_conf, update, ticker, fee, mocker) -> None:
     msg_mock.reset_mock()
     telegram._count(update=update, context=MagicMock())
 
-    msg = ('<pre>  current    max    total stake\n---------  -----  -------------\n'
-           '        1      {}          {}</pre>').format(
-        default_conf['max_open_trades'],
-        default_conf['stake_amount']
-    )
+    msg = f"<pre>  current    max    total stake\n---------  -----  -------------\n        1      {default_conf['max_open_trades']}          {default_conf['stake_amount']}</pre>"
+
     assert msg in msg_mock.call_args_list[0][0][0]
 
 
@@ -1689,14 +1689,14 @@ def test_version_handle(default_conf, update, mocker) -> None:
 
     telegram._version(update=update, context=MagicMock())
     assert msg_mock.call_count == 1
-    assert '*Version:* `{}`'.format(__version__) in msg_mock.call_args_list[0][0][0]
+    assert f'*Version:* `{__version__}`' in msg_mock.call_args_list[0][0][0]
 
     msg_mock.reset_mock()
     freqtradebot.strategy.version = lambda: '1.1.1'
 
     telegram._version(update=update, context=MagicMock())
     assert msg_mock.call_count == 1
-    assert '*Version:* `{}`'.format(__version__) in msg_mock.call_args_list[0][0][0]
+    assert f'*Version:* `{__version__}`' in msg_mock.call_args_list[0][0][0]
     assert '*Strategy version: * `1.1.1`' in msg_mock.call_args_list[0][0][0]
 
 
@@ -1708,7 +1708,7 @@ def test_show_config_handle(default_conf, update, mocker) -> None:
 
     telegram._show_config(update=update, context=MagicMock())
     assert msg_mock.call_count == 1
-    assert '*Mode:* `{}`'.format('Dry-run') in msg_mock.call_args_list[0][0][0]
+    assert f'*Mode:* `Dry-run`' in msg_mock.call_args_list[0][0][0]
     assert '*Exchange:* `binance`' in msg_mock.call_args_list[0][0][0]
     assert f'*Strategy:* `{CURRENT_TEST_STRATEGY}`' in msg_mock.call_args_list[0][0][0]
     assert '*Stoploss:* `-0.1`' in msg_mock.call_args_list[0][0][0]
@@ -1717,7 +1717,7 @@ def test_show_config_handle(default_conf, update, mocker) -> None:
     freqtradebot.config['trailing_stop'] = True
     telegram._show_config(update=update, context=MagicMock())
     assert msg_mock.call_count == 1
-    assert '*Mode:* `{}`'.format('Dry-run') in msg_mock.call_args_list[0][0][0]
+    assert f'*Mode:* `Dry-run`' in msg_mock.call_args_list[0][0][0]
     assert '*Exchange:* `binance`' in msg_mock.call_args_list[0][0][0]
     assert f'*Strategy:* `{CURRENT_TEST_STRATEGY}`' in msg_mock.call_args_list[0][0][0]
     assert '*Initial Stoploss:* `-0.1`' in msg_mock.call_args_list[0][0][0]
@@ -1822,7 +1822,7 @@ def test_send_msg_protection_notification(default_conf, mocker, time_machine) ->
     msg = {
         'type': RPCMessageType.PROTECTION_TRIGGER,
     }
-    msg.update(lock.to_json())
+    msg |= lock.to_json()
     telegram.send_msg(msg)
     assert (msg_mock.call_args[0][0] == "*Protection* triggered due to randreason. "
             "`ETH/BTC` will be locked until `2021-09-01 05:10:00`.")
@@ -1834,7 +1834,7 @@ def test_send_msg_protection_notification(default_conf, mocker, time_machine) ->
         'type': RPCMessageType.PROTECTION_TRIGGER_GLOBAL,
     }
     lock = PairLocks.lock_pair('*', arrow.utcnow().shift(minutes=100).datetime, 'randreason')
-    msg.update(lock.to_json())
+    msg |= lock.to_json()
     telegram.send_msg(msg)
     assert (msg_mock.call_args[0][0] == "*Protection* triggered due to randreason. "
             "*All pairs* will be locked until `2021-09-01 06:45:00`.")

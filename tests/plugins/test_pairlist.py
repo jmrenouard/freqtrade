@@ -677,9 +677,11 @@ def test_VolumePairList_range(mocker, whitelist_conf, shitcoinmarkets, tickers, 
 
         # remove ohlcv when looback_timeframe != 1d
         # to enforce fallback to ticker data
-        if 'lookback_timeframe' in pairlists[0]:
-            if pairlists[0]['lookback_timeframe'] != '1d':
-                ohlcv_data = []
+        if (
+            'lookback_timeframe' in pairlists[0]
+            and pairlists[0]['lookback_timeframe'] != '1d'
+        ):
+            ohlcv_data = []
 
         mocker.patch.multiple(
             'freqtrade.exchange.Exchange',
@@ -857,7 +859,7 @@ def test__whitelist_for_active_markets(mocker, whitelist_conf, markets, pairlist
     pairlist_handler = freqtrade.pairlists._pairlist_handlers[0]
     new_whitelist = pairlist_handler._whitelist_for_active_markets(whitelist)
 
-    assert set(new_whitelist) == set(['ETH/BTC', 'TKN/BTC'])
+    assert set(new_whitelist) == {'ETH/BTC', 'TKN/BTC'}
     assert log_message in caplog.text
 
 

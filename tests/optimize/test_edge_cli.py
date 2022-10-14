@@ -28,7 +28,7 @@ def test_setup_optimize_configuration_without_arguments(mocker, default_conf, ca
     assert 'exchange' in config
     assert 'pair_whitelist' in config['exchange']
     assert 'datadir' in config
-    assert log_has('Using data directory: {} ...'.format(config['datadir']), caplog)
+    assert log_has(f"Using data directory: {config['datadir']} ...", caplog)
     assert 'timeframe' in config
 
     assert 'timerange' not in config
@@ -60,13 +60,15 @@ def test_setup_edge_configuration_with_arguments(mocker, edge_conf, caplog) -> N
     assert 'pair_whitelist' in config['exchange']
     assert 'datadir' in config
     assert config['runmode'] == RunMode.EDGE
-    assert log_has('Using data directory: {} ...'.format(config['datadir']), caplog)
+    assert log_has(f"Using data directory: {config['datadir']} ...", caplog)
     assert 'timeframe' in config
     assert log_has('Parameter -i/--timeframe detected ... Using timeframe: 1m ...',
                    caplog)
 
     assert 'timerange' in config
-    assert log_has('Parameter --timerange detected: {} ...'.format(config['timerange']), caplog)
+    assert log_has(
+        f"Parameter --timerange detected: {config['timerange']} ...", caplog
+    )
 
 
 def test_start(mocker, fee, edge_conf, caplog) -> None:
